@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This repo should stay small and product-shaped. Do not import Eva orchestration, scheduler, policy-learning, UI, or multi-agent runtime code unless Sam explicitly asks.
+This repo should stay small and product-shaped. Do not import orchestration, scheduler, policy-learning, UI, or multi-agent runtime code unless Sam explicitly asks.
 
 ## Rules
 
@@ -10,4 +10,3 @@ This repo should stay small and product-shaped. Do not import Eva orchestration,
 - Deny dangerous operations before token refresh or upstream forwarding.
 - Make failures visible; do not hide policy or token errors behind fallbacks.
 - Verify with local tests before claiming a proxy is safe.
-

@@ -5,10 +5,10 @@ import { loadConfig } from "../src/config";
 import { createProxyHandler } from "../src/proxy";
 
 const gmailAccount = requiredEnv("GMAIL_ACCOUNT");
-const proxyToken = process.env.EVA_PROXY_TOKEN ?? crypto.randomUUID();
-const adminToken = process.env.EVA_ADMIN_TOKEN ?? crypto.randomUUID();
-const dataDir = process.env.EVA_DATA_DIR ?? mkdtempSync(join(tmpdir(), "eva-ch1-live-"));
-const allowlistPath = process.env.EVA_ALLOWLIST ?? "config/allowlist.example.yaml";
+const proxyToken = process.env.ANGEL_PROXY_TOKEN ?? crypto.randomUUID();
+const adminToken = process.env.ANGEL_ADMIN_TOKEN ?? crypto.randomUUID();
+const dataDir = process.env.ANGEL_DATA_DIR ?? mkdtempSync(join(tmpdir(), "angel-gmail-live-"));
+const allowlistPath = process.env.ANGEL_ALLOWLIST ?? "config/allowlist.example.yaml";
 
 writeTokenStore(dataDir);
 
@@ -41,10 +41,10 @@ try {
     assert(message.id === messageIds[0], "messages.get returned unexpected id");
     console.log(`messages.get ok (${message.id})`);
 
-    if (process.env.EVA_LIVE_MUTATION === "1") {
+    if (process.env.ANGEL_LIVE_MUTATION === "1") {
       await verifyReversibleStarToggle(message.id);
     } else {
-      console.log("mutation smoke skipped (set EVA_LIVE_MUTATION=1 to run reversible STARRED toggle)");
+      console.log("mutation smoke skipped (set ANGEL_LIVE_MUTATION=1 to run reversible STARRED toggle)");
     }
   } else {
     console.log("mutation smoke skipped (no messages returned)");

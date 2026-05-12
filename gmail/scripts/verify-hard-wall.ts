@@ -1,5 +1,5 @@
-const proxyUrl = requiredEnv("EVA_PROXY_URL").replace(/\/$/, "");
-const proxyToken = requiredEnv("EVA_PROXY_TOKEN");
+const proxyUrl = requiredEnv("ANGEL_PROXY_URL").replace(/\/$/, "");
+const proxyToken = requiredEnv("ANGEL_PROXY_TOKEN");
 
 interface Probe {
   name: string;

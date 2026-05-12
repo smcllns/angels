@@ -19,7 +19,7 @@ export function normalizePath(pathname: string): NormalizeResult {
   }
 
   if (trimmed.startsWith("/upload/")) {
-    return { ok: false, reason: "Gmail upload routes are not allowed in Chapter 1" };
+    return { ok: false, reason: "Gmail upload routes are not allowed in Gmail Angel" };
   }
 
   return { ok: true, path: trimmed };

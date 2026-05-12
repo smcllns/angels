@@ -36,7 +36,7 @@ export function createProxyHandler(options: ProxyOptions): { fetch: (req: Reques
       const url = new URL(req.url);
 
       if (url.pathname === "/healthz") {
-        return jsonWithEvaHeaders({ ok: true, auth: tokenManager.status(), rules: options.config.rules.length }, 200, id, "allow");
+        return jsonWithAngelHeaders({ ok: true, auth: tokenManager.status(), rules: options.config.rules.length }, 200, id, "allow");
       }
 
       if (url.pathname.startsWith("/admin/")) {
@@ -95,7 +95,7 @@ export function createProxyHandler(options: ProxyOptions): { fetch: (req: Reques
           startedAt,
           denyReason: token.reason,
         }));
-        return jsonWithEvaHeaders(
+        return jsonWithAngelHeaders(
           { error: "reauth_required", message: token.reason, authUrl: token.authUrl },
           401,
           id,
@@ -134,7 +134,7 @@ export function createProxyHandler(options: ProxyOptions): { fetch: (req: Reques
           bodyText,
           startedAt,
         }));
-        return jsonWithEvaHeaders({ error: "upstream_error", message: "Proxy failed to reach Gmail API" }, 502, id, "upstream_error", decision.rule.id);
+        return jsonWithAngelHeaders({ error: "upstream_error", message: "Proxy failed to reach Gmail API" }, 502, id, "upstream_error", decision.rule.id);
       }
 
       logger.append(baseLogEntry({
@@ -164,14 +164,14 @@ function handleAdmin(
 ): Response {
   const auth = authenticate(req, options.adminToken);
   if (!auth.ok) {
-    return jsonWithEvaHeaders({ error: "unauthorized", message: auth.reason }, 401, id, "deny");
+    return jsonWithAngelHeaders({ error: "unauthorized", message: auth.reason }, 401, id, "deny");
   }
 
   if (url.pathname === "/admin/auth/status") {
-    return jsonWithEvaHeaders(context.tokenManager.status(), 200, id, "allow");
+    return jsonWithAngelHeaders(context.tokenManager.status(), 200, id, "allow");
   }
   if (url.pathname === "/admin/auth/start") {
-    return jsonWithEvaHeaders(
+    return jsonWithAngelHeaders(
       {
         status: "not_implemented",
         message: "OAuth browser consent endpoint is intentionally stubbed in the local prototype.",
@@ -182,17 +182,17 @@ function handleAdmin(
     );
   }
   if (url.pathname === "/admin/config") {
-    return jsonWithEvaHeaders({ version: options.config.version, rules: options.config.rules.map((rule) => rule.id) }, 200, id, "allow");
+    return jsonWithAngelHeaders({ version: options.config.version, rules: options.config.rules.map((rule) => rule.id) }, 200, id, "allow");
   }
   if (url.pathname === "/admin/logs") {
     const limit = Number(url.searchParams.get("tail") ?? "100");
-    return jsonWithEvaHeaders({ entries: context.logger.tail(Number.isFinite(limit) ? limit : 100) }, 200, id, "allow");
+    return jsonWithAngelHeaders({ entries: context.logger.tail(Number.isFinite(limit) ? limit : 100) }, 200, id, "allow");
   }
   if (url.pathname === "/admin/logs/verify") {
-    return jsonWithEvaHeaders(context.logger.verify(), 200, id, "allow");
+    return jsonWithAngelHeaders(context.logger.verify(), 200, id, "allow");
   }
 
-  return jsonWithEvaHeaders({ error: "not_found" }, 404, id, "deny");
+  return jsonWithAngelHeaders({ error: "not_found" }, 404, id, "deny");
 }
 
 function authenticate(req: Request, expectedToken: string): { ok: true } | { ok: false; reason: string } {
@@ -236,7 +236,7 @@ function deny(options: {
     startedAt: options.startedAt,
     denyReason: options.reason,
   }));
-  return jsonWithEvaHeaders({ error: "denied", message: options.reason }, options.status, options.id, "deny", options.ruleId);
+  return jsonWithAngelHeaders({ error: "denied", message: options.reason }, options.status, options.id, "deny", options.ruleId);
 }
 
 function baseLogEntry(options: {
@@ -277,7 +277,7 @@ function freshUpstreamHeaders(accessToken: string, body?: string): Headers {
   return headers;
 }
 
-function jsonWithEvaHeaders(
+function jsonWithAngelHeaders(
   body: unknown,
   status: number,
   requestId: string,
@@ -286,7 +286,7 @@ function jsonWithEvaHeaders(
 ): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: evaHeaders(requestId, decision, ruleId, { "Content-Type": "application/json" }),
+    headers: angelHeaders(requestId, decision, ruleId, { "Content-Type": "application/json" }),
   });
 }
 
@@ -294,19 +294,19 @@ async function upstreamToClient(upstream: Response, requestId: string, decision:
   const headers = new Headers(upstream.headers);
   headers.delete("content-encoding");
   headers.delete("content-length");
-  for (const [key, value] of evaHeaders(requestId, decision, ruleId)) headers.set(key, value);
+  for (const [key, value] of angelHeaders(requestId, decision, ruleId)) headers.set(key, value);
   return new Response(await upstream.arrayBuffer(), { status: upstream.status, headers });
 }
 
-function evaHeaders(
+function angelHeaders(
   requestId: string,
   decision: string,
   ruleId?: string,
   extra?: HeadersInit,
 ): Headers {
   const headers = new Headers(extra);
-  headers.set("X-Eva-Request-Id", requestId);
-  headers.set("X-Eva-Decision", decision);
-  headers.set("X-Eva-Allowlist-Rule", ruleId ?? "");
+  headers.set("X-Angel-Request-Id", requestId);
+  headers.set("X-Angel-Decision", decision);
+  headers.set("X-Angel-Allowlist-Rule", ruleId ?? "");
   return headers;
 }

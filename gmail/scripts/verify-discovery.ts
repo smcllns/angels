@@ -1,6 +1,6 @@
 import { loadConfig } from "../src/config";
 
-const allowlistPath = process.env.EVA_ALLOWLIST ?? "config/allowlist.example.yaml";
+const allowlistPath = process.env.ANGEL_ALLOWLIST ?? "config/allowlist.example.yaml";
 const config = loadConfig(allowlistPath);
 
 const dangerousWords = [

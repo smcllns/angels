@@ -32,7 +32,7 @@ beforeAll(() => {
   });
   gmailBase = `http://${gmailServer.hostname}:${gmailServer.port}`;
 
-  dataDir = mkdtempSync(join(tmpdir(), "eva-ch1-proxy-"));
+  dataDir = mkdtempSync(join(tmpdir(), "angel-gmail-proxy-"));
   const allowlistPath = join(dataDir, "allowlist.yaml");
   writeFileSync(allowlistPath, allowlistYaml());
 
@@ -168,7 +168,7 @@ describe("constrained write", () => {
 });
 
 describe("logs and reauth", () => {
-  test("writes tamper-evident request logs", async () => {
+  test("writes hash-chained request logs", async () => {
     await proxyFetch("/gmail/v1/users/me/labels");
     const response = await adminFetch("/admin/logs/verify");
     expect(response.status).toBe(200);
@@ -178,7 +178,7 @@ describe("logs and reauth", () => {
   });
 
   test("allowed request returns reauth_required when no token is available", async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), "eva-ch1-reauth-"));
+    const tempDir = mkdtempSync(join(tmpdir(), "angel-gmail-reauth-"));
     const allowlistPath = join(tempDir, "allowlist.yaml");
     writeFileSync(allowlistPath, allowlistYaml());
     const handler = createProxyHandler({
