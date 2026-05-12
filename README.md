@@ -1,12 +1,12 @@
 # Angels
 
-Angels keep agents well-behaved around protected credentials.
+Angels ensure agents are well-behaved.
 
-An angel is a sandbox that contains one proxy server, your API credentials, and an allowlist of approved API operations.
+An angel is a sandbox that contains one proxy server, your API credentials, and an allowlist of approved API endpoints.
 
-The agent calls the angel with a proxy token. The angel validates the request, swaps in the real upstream credential, forwards only allowlisted requests, and returns the API response without exposing the real credential.
+The proxy accepts the agent's placeholder key, validates the request, swaps in your real API key upstream, and returns the API response without exposing your real key.
 
-This creates a chokepoint to block dangerous requests, expand allowed operations deliberately, and keep a centralized tamper-evident log of every request made with that credential.
+This means that to call the API, your agent HAS to use your proxy server to reach the API endpoints, creating a chokepoint to block dangerous requests, expand allowed endpoints deliberately, and store an append-only centralized log of all API requests using that key.
 
 An angel is a narrow network boundary:
 
