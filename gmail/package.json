@@ -1,0 +1,18 @@
+{
+  "name": "angels-gmail",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server.ts",
+    "test": "bun test tests/*.test.ts",
+    "verify:hard-wall": "bun run scripts/verify-hard-wall.ts",
+    "verify:discovery": "bun run scripts/verify-discovery.ts",
+    "verify:live-gmail": "bun run scripts/verify-live-gmail.ts"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.13"
+  }
+}

@@ -1,0 +1,74 @@
+version: 1
+
+ownerUserIds:
+  - me
+  - example@gmail.com
+
+defaults:
+  queryPolicy:
+    readOnly: passThroughExceptDangerousSystemParams
+    mutating: denyAll
+  forbiddenLabelIds:
+    - TRASH
+    - SENT
+
+dangerousSystemQueryParams:
+  - _HttpMethod
+  - X-HTTP-Method-Override
+  - x-http-method-override
+  - $ct
+  - password
+  - passwd
+
+rules:
+  - id: list_messages
+    method: GET
+    path: /gmail/v1/users/{userId}/messages
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: get_message
+    method: GET
+    path: /gmail/v1/users/{userId}/messages/{messageId}
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: list_threads
+    method: GET
+    path: /gmail/v1/users/{userId}/threads
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: get_thread
+    method: GET
+    path: /gmail/v1/users/{userId}/threads/{threadId}
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: list_labels
+    method: GET
+    path: /gmail/v1/users/{userId}/labels
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: get_label
+    method: GET
+    path: /gmail/v1/users/{userId}/labels/{labelId}
+    queryPolicy: readOnly
+    bodyPolicy: none
+
+  - id: modify_message_labels
+    method: POST
+    path: /gmail/v1/users/{userId}/messages/{messageId}/modify
+    queryPolicy: mutating
+    bodyPolicy:
+      kind: labelModify
+      forbiddenLabelIds: ["TRASH", "SENT"]
+
+  - id: modify_thread_labels
+    method: POST
+    path: /gmail/v1/users/{userId}/threads/{threadId}/modify
+    queryPolicy: mutating
+    bodyPolicy:
+      kind: labelModify
+      forbiddenLabelIds: ["TRASH", "SENT"]
