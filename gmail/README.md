@@ -7,12 +7,31 @@ label/archive mutations.
 It intentionally does not include policy, corrections, send proxying, scheduled
 jobs, UI, or MCP. Those can live in whatever agent or product calls the proxy.
 
+## Mental Model
+
+The setup plane has your powerful credentials. The execution plane only gets a
+small capability: the angel URL and token.
+
+```mermaid
+flowchart LR
+  subgraph Setup["Setup plane"]
+    Admin["Human or admin agent"] --> Provisioner["Provisioner<br/>Blaxel + 1Password"]
+    Provisioner --> Angel["Gmail Angel sandbox<br/>Gmail credentials<br/>allowlist<br/>request logs"]
+  end
+
+  subgraph Execution["Execution plane"]
+    Worker["Worker agent<br/>ANGEL_URL + ANGEL_TOKEN only"] -->|"Gmail-shaped HTTP"| Angel
+    Angel -->|"allowed requests<br/>real Google token"| Gmail["Gmail API"]
+    Angel -->|"denied requests"| Worker
+  end
+```
+
 ## Developer API
 
 Gmail Angel exposes Gmail-shaped HTTP routes. Give your agent only:
 
-- `ANGEL_PROXY_URL`
-- `ANGEL_PROXY_TOKEN`
+- `ANGEL_URL`
+- `ANGEL_TOKEN`
 
 Do not give the agent Google OAuth credentials, Google client secrets, or access
 to the sandbox shell.
@@ -21,7 +40,7 @@ Every agent request uses the same shape:
 
 ```http
 GET /gmail/v1/users/me/messages?q=from%3Aexample.com&maxResults=10
-Authorization: Bearer <ANGEL_PROXY_TOKEN>
+Authorization: Bearer <ANGEL_TOKEN>
 ```
 
 The proxy validates the method, normalized path, query string, and body against
@@ -49,8 +68,8 @@ override parameters. Label mutations accept only `addLabelIds` and
 ### JavaScript Example
 
 ```js
-const angelUrl = process.env.ANGEL_PROXY_URL;
-const token = process.env.ANGEL_PROXY_TOKEN;
+const angelUrl = process.env.ANGEL_URL;
+const token = process.env.ANGEL_TOKEN;
 
 const headers = {
   Authorization: `Bearer ${token}`,
@@ -115,7 +134,7 @@ Admin endpoints use `ANGEL_ADMIN_TOKEN`:
 
 ```bash
 bun install
-ANGEL_PROXY_TOKEN=dev-token \
+ANGEL_TOKEN=dev-token \
 ANGEL_DATA_DIR=.local/angel \
 ANGEL_ALLOWLIST=config/allowlist.example.yaml \
 ANGEL_GOOGLE_ACCESS_TOKEN=test-access-token \
@@ -131,8 +150,8 @@ bun test
 Hard-wall verifier against a running proxy:
 
 ```bash
-ANGEL_PROXY_URL=http://127.0.0.1:3000 \
-ANGEL_PROXY_TOKEN=dev-token \
+ANGEL_URL=http://127.0.0.1:3000 \
+ANGEL_TOKEN=dev-token \
 bun run verify:hard-wall
 ```
 

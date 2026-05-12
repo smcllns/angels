@@ -4,7 +4,7 @@ import { createProxyHandler } from "./proxy";
 const port = Number(process.env.PORT ?? "3000");
 const dataDir = requiredEnv("ANGEL_DATA_DIR");
 const allowlistPath = requiredEnv("ANGEL_ALLOWLIST");
-const proxyToken = requiredEnv("ANGEL_PROXY_TOKEN");
+const proxyToken = requiredEnv("ANGEL_TOKEN");
 const adminToken = process.env.ANGEL_ADMIN_TOKEN ?? proxyToken;
 const gmailUpstreamBase = process.env.GMAIL_UPSTREAM_BASE ?? "https://gmail.googleapis.com";
 const publicBaseUrl = process.env.ANGEL_PUBLIC_BASE_URL ?? `http://127.0.0.1:${port}`;
