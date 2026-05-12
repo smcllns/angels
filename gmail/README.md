@@ -7,6 +7,110 @@ label/archive mutations.
 It intentionally does not include policy, corrections, send proxying, scheduled
 jobs, UI, or MCP. Those can live in whatever agent or product calls the proxy.
 
+## Developer API
+
+Gmail Angel exposes Gmail-shaped HTTP routes. Give your agent only:
+
+- `ANGEL_PROXY_URL`
+- `ANGEL_PROXY_TOKEN`
+
+Do not give the agent Google OAuth credentials, Google client secrets, or access
+to the sandbox shell.
+
+Every agent request uses the same shape:
+
+```http
+GET /gmail/v1/users/me/messages?q=from%3Aexample.com&maxResults=10
+Authorization: Bearer <ANGEL_PROXY_TOKEN>
+```
+
+The proxy validates the method, normalized path, query string, and body against
+`config/allowlist.example.yaml`. Allowed requests are forwarded to Gmail with
+the real Google access token. Denied requests return before token refresh or
+Gmail forwarding.
+
+### Allowed Gmail Routes
+
+| Capability | Method + path |
+| --- | --- |
+| List messages | `GET /gmail/v1/users/{userId}/messages` |
+| Get a message | `GET /gmail/v1/users/{userId}/messages/{messageId}` |
+| List threads | `GET /gmail/v1/users/{userId}/threads` |
+| Get a thread | `GET /gmail/v1/users/{userId}/threads/{threadId}` |
+| List labels | `GET /gmail/v1/users/{userId}/labels` |
+| Get a label | `GET /gmail/v1/users/{userId}/labels/{labelId}` |
+| Modify message labels | `POST /gmail/v1/users/{userId}/messages/{messageId}/modify` |
+| Modify thread labels | `POST /gmail/v1/users/{userId}/threads/{threadId}/modify` |
+
+Read-only routes pass through Gmail query parameters except dangerous method
+override parameters. Label mutations accept only `addLabelIds` and
+`removeLabelIds`; `TRASH` and `SENT` are always forbidden.
+
+### JavaScript Example
+
+```js
+const angelUrl = process.env.ANGEL_PROXY_URL;
+const token = process.env.ANGEL_PROXY_TOKEN;
+
+const headers = {
+  Authorization: `Bearer ${token}`,
+};
+
+const list = await fetch(
+  `${angelUrl}/gmail/v1/users/me/messages?q=newer_than:7d&maxResults=10`,
+  { headers },
+);
+
+const { messages = [] } = await list.json();
+const messageId = messages[0]?.id;
+
+if (messageId) {
+  const message = await fetch(
+    `${angelUrl}/gmail/v1/users/me/messages/${messageId}?format=metadata`,
+    { headers },
+  );
+
+  await fetch(`${angelUrl}/gmail/v1/users/me/messages/${messageId}/modify`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      addLabelIds: ["STARRED"],
+      removeLabelIds: ["INBOX"],
+    }),
+  });
+}
+```
+
+Responses include:
+
+- `X-Angel-Request-Id`: stable id for log lookup
+- `X-Angel-Decision`: `allow`, `deny`, or `reauth_required`
+- `X-Angel-Allowlist-Rule`: matched allowlist rule when one exists
+
+Common error bodies:
+
+```json
+{ "error": "denied", "message": "no allowlist rule matched request" }
+```
+
+```json
+{
+  "error": "reauth_required",
+  "message": "missing Google OAuth token store",
+  "authUrl": "https://your-angel.example/admin/auth/start?state=..."
+}
+```
+
+Admin endpoints use `ANGEL_ADMIN_TOKEN`:
+
+- `GET /admin/auth/status`
+- `GET /admin/config`
+- `GET /admin/logs?tail=100`
+- `GET /admin/logs/verify`
+
 ## Run
 
 ```bash

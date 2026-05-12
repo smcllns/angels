@@ -55,6 +55,17 @@ afterAll(() => {
   gmailServer?.stop(true);
 });
 
+describe("service metadata", () => {
+  test("healthz does not expose auth state", async () => {
+    const response = await fetch(`${proxyBase}/healthz`);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.rules).toBeGreaterThan(0);
+    expect(body.auth).toBeUndefined();
+  });
+});
+
 describe("broad read", () => {
   test("forwards arbitrary read-only Gmail query params", async () => {
     upstreamRequests = [];

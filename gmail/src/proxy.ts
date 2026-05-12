@@ -36,7 +36,7 @@ export function createProxyHandler(options: ProxyOptions): { fetch: (req: Reques
       const url = new URL(req.url);
 
       if (url.pathname === "/healthz") {
-        return jsonWithAngelHeaders({ ok: true, auth: tokenManager.status(), rules: options.config.rules.length }, 200, id, "allow");
+        return jsonWithAngelHeaders({ ok: true, rules: options.config.rules.length }, 200, id, "allow");
       }
 
       if (url.pathname.startsWith("/admin/")) {

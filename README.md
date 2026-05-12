@@ -15,3 +15,4 @@ An angel is a sandbox that contains one proxy server, your API credentials, and 
 ### [`gmail`](gmail/)
 - Allows: read, search, archive, label changes
 - Blocks: send, delete
+- API: Gmail-shaped HTTP proxy routes documented in [`gmail/README.md`](gmail/README.md)
